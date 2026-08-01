@@ -1,7 +1,7 @@
 import { PrismaClient } from "./generated/prisma/client";
 
 const prismaClientSingleton = () => {
-  return new PrismaClient();
+  return new PrismaClient({} as never);
 };
 
 declare const globalThis: {
@@ -12,10 +12,6 @@ const db = globalThis.prismaGlobal ?? prismaClientSingleton();
 
 export default db;
 
-if (process.env.NODE_ENV !== "production") globalThis.prismaGlobal = db;
-
-
-
-
-
-
+if (process.env.NODE_ENV !== "production") {
+  globalThis.prismaGlobal = db;
+}

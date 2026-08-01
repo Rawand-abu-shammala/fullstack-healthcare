@@ -7,7 +7,6 @@ function AuthLayout({ children }: { children: React.ReactNode }) {
       <div className="w-full md:w-1/2 min-h-screen flex items-center justify-center bg-gray-100 px-4">
         {children}
       </div>
-
       <div className="hidden md:block relative w-1/2 min-h-screen overflow-hidden">
         <Image
           src="https://images.pexels.com/photos/6129437/pexels-photo-6129437.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1"
