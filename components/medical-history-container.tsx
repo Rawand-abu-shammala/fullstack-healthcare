@@ -1,4 +1,4 @@
-import db from "@/lib/db";
+import { prisma } from "@/lib/db";
 import React from "react";
 import { MedicalHistory } from "./medical-history";
 
@@ -8,7 +8,7 @@ interface DataProps {
 }
 
 export async function MedicalHistoryContainer ({ id, patientId }: DataProps) {
-  const data = await db.medicalRecords.findMany({
+  const data = await prisma.medicalRecords.findMany({
     where: { patient_id: patientId },
     include: {
       diagnosis: { include: { doctor: true } },

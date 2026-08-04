@@ -64,14 +64,14 @@ const Appointments = async (props: {
   let queryId = undefined;
 
   if (
-    userRole == "admin" ||
-    (userRole == "doctor" && id) ||
-    (userRole === "nurse" && id)
+    userRole == "ADMIN" ||
+    (userRole == "DOCTOR" && id) ||
+    (userRole === "NURSE" && id)
   ) {
     queryId = id;
-  } else if (userRole === "doctor" || userRole === "patient") {
+  } else if (userRole === "DOCTOR" || userRole === "PATIENT") {
     queryId = userId;
-  } else if (userRole === "nurse") {
+  } else if (userRole === "NURSE") {
     queryId = undefined;
   }
 
@@ -94,9 +94,9 @@ const Appointments = async (props: {
       >
         <td className="flex items-center gap-2 md:gap-4 py-2 xl:py-4">
           <ProfileImage
-            url={item?.patient?.img!}
+            url={item?.patient?.img ?? ""}
             name={patient_name}
-            bgColor={item?.patient?.colorCode!}
+            bgColor={item?.patient?.colorCode ?? "#8a8607"}
           />
           <div>
             <h3 className="font-semibold uppercase">{patient_name}</h3>
@@ -114,9 +114,9 @@ const Appointments = async (props: {
         <td className="hidden  items-center py-2  md:table-cell">
           <div className="flex items-center  gap-2 md:gap-4">
             <ProfileImage
-              url={item.doctor?.img!}
+              url={item.doctor?.img ?? ""}
               name={item.doctor?.name}
-              bgColor={item?.doctor?.colorCode!}
+              bgColor={item?.doctor?.colorCode ?? "#8a8607"}
               textClassName="text-black"
             />
 

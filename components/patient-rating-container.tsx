@@ -1,4 +1,4 @@
-import db from "@/lib/db";
+import { prisma } from "@/lib/db";
 import { auth } from "@clerk/nextjs/server";
 import React from "react";
 import RatingList from "./rating-list";
@@ -6,7 +6,7 @@ import RatingList from "./rating-list";
 async function PatientRatingContainer({ id }: { id?: string }) {
      const { userId } = await auth();
 
-  const data = await db.rating.findMany({
+  const data = await prisma.rating.findMany({
     take: 10,
 
     where: { patient_id: id ? id : userId! },

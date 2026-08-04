@@ -33,7 +33,6 @@ function StatCard({
       <CardHeader className="flex flex-row items-center justify-between py-3 capitalize">
         <h3>{title}</h3>
         <Button
-          asChild
           size="sm"
           variant="outline"
           className="font-normal text-xs bg-transparent p-2 h-0 hover:underline"

@@ -26,7 +26,7 @@ export async function AppointmentActionOptions ({
 
   return (
     <Popover>
-      <PopoverTrigger asChild>
+      <PopoverTrigger>
         <Button
           variant="outline"
           className="flex items-center justify-center rounded-full p-1"
@@ -42,7 +42,6 @@ export async function AppointmentActionOptions ({
             size="sm"
             variant="ghost"
             className="w-full justify-start"
-            asChild
           >
             <Link href={`appointments/${appointmentId}`}>
               <User size={16} /> View Full Details

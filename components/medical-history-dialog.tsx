@@ -17,7 +17,7 @@ export async function MedicalHistoryDialog ({
 }: DataProps){
   return (
     <Dialog>
-      <DialogTrigger asChild>
+      <DialogTrigger>
         <Button
           variant="outline"
           className="flex items-center justify-center rounded-full bg-blue-600/10 hover:underline text-blue-600 px-1.5 py-1 text-xs md:text-sm"

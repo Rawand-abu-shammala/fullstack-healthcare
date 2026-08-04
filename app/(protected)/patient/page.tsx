@@ -7,7 +7,6 @@ import { RecentAppointments } from "@/components/tables/recent-appointment";
 import { Button } from "@/components/ui/button";
 import { AvailableDoctorProps } from "@/types/data-types";
 import { getPatientDashboardStatistics } from "@/utils/services/patient";
-import { UserButton } from "@clerk/nextjs";
 import { currentUser } from "@clerk/nextjs/server";
 import { Briefcase, BriefcaseBusiness, BriefcaseMedical } from "lucide-react";
 import Link from "next/link";
@@ -24,7 +23,7 @@ export async function PatientDashboard () {
     totalAppointments,
     availableDoctor,
     monthlyData,
-  } = await getPatientDashboardStatistics(user?.id!);
+  } = await getPatientDashboardStatistics(user?.id ?? "");
 
   if (user && !data) {
     redirect("/patient/registration");
@@ -51,7 +50,7 @@ export async function PatientDashboard () {
     },
     {
       title: "pending",
-      value: appointmentCounts?.PENDING! + appointmentCounts?.SCHEDULED!,
+      value: appointmentCounts?.PENDING + appointmentCounts?.SCHEDULED,
       icon: BriefcaseBusiness,
       className: "bg-yellow-600/15",
       iconClassName: "bg-yellow-600/25 text-yellow-600",

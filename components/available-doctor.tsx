@@ -6,7 +6,6 @@ import Link from "next/link";
 import { Card } from "./ui/card";
 import { ProfileImage } from "./profile-image";
 import { daysOfWeek } from "@/utils";
-import { cn } from "@/lib/utils";
 
 const getToday = () => {
   const today = new Date().getDay();
@@ -43,7 +42,6 @@ async function AvailableDoctor({ data }: DataProps) {
 
         {(await checkRole("ADMIN")) && (
           <Button
-            asChild
             variant={"outline"}
             disabled={data?.length === 0}
             className="disabled:cursor-not-allowed disabled:text-gray-200"
@@ -64,9 +62,8 @@ async function AvailableDoctor({ data }: DataProps) {
               name={doc?.name}
               className={`md:flex min-w-14 min-h-14 md:min-w-16 md:min-h-16`}
               textClassName="text-2xl font-semibold text-black"
-              bgColor={doc?.colorCode!}
+              bgColor={doc?.colorCode}
             />
-            {/* <p>{doc.colorCode}</p> */}
             <div>
               <h2 className="font-semibold text-lg md:text-xl">{doc?.name}</h2>
               <p className="text-base capitalize text-gray-600">

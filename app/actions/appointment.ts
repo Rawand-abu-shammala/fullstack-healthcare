@@ -1,13 +1,10 @@
 "use server";
 
 import { VitalSignsFormData } from "@/components/dialogs/add-vital-signs";
-import db from "@/lib/db";
+import { prisma } from "@/lib/db";
 import { AppointmentSchema, VitalSignsSchema } from "@/lib/schema";
 import { auth } from "@clerk/nextjs/server";
 import { AppointmentStatus } from "@/lib/generated/prisma/browser";
-
-feat(patient): implement patient and appointment management enhancements
-This update introduces several improvements to the patient management flow, focusing on appointment handling and related medical record operations. It adds support for creating new appointments, updating appointment status in a structured way, and recording vital signs associated with patient visits. The changes also improve the underlying server actions to ensure data is validated and processed more reliably across different patient-related scenarios. These enhancements aim to streamline patient care management and provide a smoother experience for administrators and healthcare staff.
 
 export async function createNewAppointment(data: any) {
   try {
@@ -18,7 +15,7 @@ export async function createNewAppointment(data: any) {
     }
     const validated = validatedData.data;
 
-    await db.appointment.create({
+    await prisma.appointment.create({
       data: {
         patient_id: data.patient_id,
         doctor_id: validated.doctor_id,
@@ -45,7 +42,7 @@ export async function appointmentAction(
   reason: string
 ) {
   try {
-    await db.appointment.update({
+    await prisma.appointment.update({
       where: { id: Number(id) },
       data: {
         status,
@@ -81,7 +78,7 @@ export async function addVitalSigns(
     let medicalRecord = null;
 
     if (!validatedData.medical_id) {
-      medicalRecord = await db.medicalRecords.create({
+      medicalRecord = await prisma.medicalRecords.create({
         data: {
           patient_id: validatedData.patient_id,
           appointment_id: Number(appointmentId),
@@ -92,7 +89,7 @@ export async function addVitalSigns(
 
     const med_id = validatedData.medical_id || medicalRecord?.id;
 
-    await db.vitalSigns.create({
+    await prisma.vitalSigns.create({
       data: {
         ...validatedData,
         medical_id: Number(med_id!),

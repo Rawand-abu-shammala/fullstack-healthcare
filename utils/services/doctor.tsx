@@ -1,8 +1,8 @@
-import db from "@/lib/db";
+import { prisma} from "@/lib/db";
 
 export async function getDoctors() {
   try {
-    const data = await db.doctor.findMany();
+    const data = await prisma.doctor.findMany();
     return { success: true, data, status: 200 };
   } catch (error) {
     console.log(error);

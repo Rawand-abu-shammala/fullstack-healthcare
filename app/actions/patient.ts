@@ -1,6 +1,6 @@
 "use server";
 
-import db from "@/lib/db";
+import { prisma } from "@/lib/db";
 import { PatientFormSchema } from "@/lib/schema";
 import { clerkClient } from "@clerk/nextjs/server";
 
@@ -24,7 +24,7 @@ export async function updatePatient(data: any, pid: string) {
       lastName: patientData.last_name,
     });
 
-    await db.patient.update({
+    await prisma.patient.update({
       data: {
         ...patientData,
       },
@@ -41,6 +41,7 @@ export async function updatePatient(data: any, pid: string) {
     return { success: false, error: true, msg: error?.message };
   }
 }
+
 export async function createNewPatient(data: any, pid: string) {
   try {
     const validateData = PatientFormSchema.safeParse(data);
@@ -57,6 +58,7 @@ export async function createNewPatient(data: any, pid: string) {
     let patient_id = pid;
 
     const client = await clerkClient();
+
     if (pid === "new-patient") {
       const user = await client.users.createUser({
         emailAddress: [patientData.email],
@@ -73,16 +75,21 @@ export async function createNewPatient(data: any, pid: string) {
       });
     }
 
-    await db.patient.create({
+    await prisma.patient.create({
       data: {
         ...patientData,
         id: patient_id,
       },
     });
 
-    return { success: true, error: false, msg: "Patient created successfully" };
+    return {
+      success: true,
+      error: false,
+      msg: "Patient created successfully",
+    };
   } catch (error: any) {
     console.error(error);
     return { success: false, error: true, msg: error?.message };
   }
 }
+

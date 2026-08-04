@@ -10,7 +10,7 @@ interface DataProps {
   patient: { last_name: string; first_name: string };
 }
 
-function RatingList({ data }: { data: DataProps[] }) {
+function RatingList({ data }: { data: any[] }) {
   return (
     <div className="bg-white rounded-lg">
       <div className="flex items-center justify-between p-4">

@@ -1,4 +1,4 @@
-import db from "@/lib/db";
+import { prisma } from "@/lib/db";
 import { Prisma } from "@/lib/generated/prisma/client";
 
 export async function getAppointmentById(id: number) {
@@ -11,7 +11,7 @@ export async function getAppointmentById(id: number) {
       };
     }
 
-    const data = await db.appointment.findUnique({
+    const data = await prisma.appointment.findUnique({
       where: { id },
       include: {
         doctor: {
@@ -115,7 +115,7 @@ export async function getPatientAppointments({
     const SKIP = (PAGE_NUMBER - 1) * LIMIT; //0 -9
 
     const [data, totalRecord] = await Promise.all([
-      db.appointment.findMany({
+      prisma.appointment.findMany({
         where: buildQuery(id, search),
         skip: SKIP,
         take: LIMIT,
@@ -151,7 +151,7 @@ export async function getPatientAppointments({
         },
         orderBy: { appointment_date: "desc" },
       }),
-      db.appointment.count({
+      prisma.appointment.count({
         where: buildQuery(id, search),
       }),
     ]);
@@ -191,7 +191,7 @@ export async function getAppointmentWithMedicalRecordsById(id: number) {
       };
     }
 
-    const data = await db.appointment.findUnique({
+    const data = await prisma.appointment.findUnique({
       where: { id },
       include: {
         patient: true,

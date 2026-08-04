@@ -1,5 +1,5 @@
-import db from "@/lib/db";
-import { getMonth, format, startOfYear, endOfMonth, isToday } from "date-fns";
+import { prisma } from "@/lib/db";
+import { getMonth, format, startOfYear, endOfMonth } from "date-fns";
 import { daysOfWeek } from "..";
 
 type AppointmentStatus = "PENDING" | "SCHEDULED" | "COMPLETED" | "CANCELLED";
@@ -24,10 +24,11 @@ const initializeMonthlyData = () => {
       completed: 0,
     })
   );
+
   return months;
 };
 
-export async function processAppointments (appointments: Appointment[]) {
+export async function processAppointments(appointments: Appointment[]) {
   const monthlyData = initializeMonthlyData();
 
   const appointmentCounts = appointments.reduce<
@@ -35,8 +36,7 @@ export async function processAppointments (appointments: Appointment[]) {
   >(
     (acc, appointment) => {
       const status = appointment.status;
-
-      const appointmentDate = appointment?.appointment_date;
+      const appointmentDate = appointment.appointment_date;
 
       const monthIndex = getMonth(appointmentDate);
 
@@ -51,7 +51,6 @@ export async function processAppointments (appointments: Appointment[]) {
         }
       }
 
-      // Grouping by status
       if (isValidStatus(status)) {
         acc[status] = (acc[status] || 0) + 1;
       }
@@ -67,7 +66,7 @@ export async function processAppointments (appointments: Appointment[]) {
   );
 
   return { appointmentCounts, monthlyData };
-};
+}
 
 export async function getPatientDashboardStatistics(id: string) {
   try {
@@ -79,7 +78,7 @@ export async function getPatientDashboardStatistics(id: string) {
       };
     }
 
-    const data = await db.patient.findUnique({
+    const data = await prisma.patient.findUnique({
       where: { id },
       select: {
         id: true,
@@ -100,8 +99,8 @@ export async function getPatientDashboardStatistics(id: string) {
       };
     }
 
-    const appointments = await db.appointment.findMany({
-      where: { patient_id: data?.id },
+    const appointments = await prisma.appointment.findMany({
+      where: { patient_id: data.id },
       include: {
         doctor: {
           select: {
@@ -123,18 +122,17 @@ export async function getPatientDashboardStatistics(id: string) {
           },
         },
       },
-
       orderBy: { appointment_date: "desc" },
     });
 
-    const { appointmentCounts, monthlyData } = await processAppointments(
-      appointments
-    );
+    const { appointmentCounts, monthlyData } =
+      await processAppointments(appointments);
+
     const last5Records = appointments.slice(0, 5);
 
     const today = daysOfWeek[new Date().getDay()];
 
-    const availableDoctor = await db.doctor.findMany({
+    const availableDoctor = await prisma.doctor.findMany({
       select: {
         id: true,
         name: true,
@@ -174,7 +172,7 @@ export async function getPatientDashboardStatistics(id: string) {
 
 export async function getPatientById(id: string) {
   try {
-    const patient = await db.patient.findUnique({
+    const patient = await prisma.patient.findUnique({
       where: { id },
     });
 
@@ -196,14 +194,9 @@ export async function getPatientById(id: string) {
 
 export async function getPatientFullDataById(id: string) {
   try {
-    const patient = await db.patient.findFirst({
+    const patient = await prisma.patient.findFirst({
       where: {
-        OR: [
-          {
-            id,
-          },
-          { email: id },
-        ],
+        OR: [{ id }, { email: id }],
       },
       include: {
         _count: {
@@ -230,6 +223,7 @@ export async function getPatientFullDataById(id: string) {
         status: 404,
       };
     }
+
     const lastVisit = patient.appointments[0]?.appointment_date || null;
 
     return {
@@ -263,7 +257,7 @@ export async function getAllPatients({
     const SKIP = (PAGE_NUMBER - 1) * LIMIT;
 
     const [patients, totalRecords] = await Promise.all([
-      db.patient.findMany({
+      prisma.patient.findMany({
         where: {
           OR: [
             { first_name: { contains: search, mode: "insensitive" } },
@@ -276,7 +270,10 @@ export async function getAllPatients({
           appointments: {
             select: {
               medical: {
-                select: { created_at: true, treatment_plan: true },
+                select: {
+                  created_at: true,
+                  treatment_plan: true,
+                },
                 orderBy: { created_at: "desc" },
                 take: 1,
               },
@@ -289,7 +286,8 @@ export async function getAllPatients({
         take: LIMIT,
         orderBy: { first_name: "asc" },
       }),
-      db.patient.count(),
+
+      prisma.patient.count(),
     ]);
 
     const totalPages = Math.ceil(totalRecords / LIMIT);

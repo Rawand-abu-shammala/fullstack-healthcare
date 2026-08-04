@@ -26,7 +26,6 @@ export function StatSummary ({ data, total }: { data: any; total: number }) {
         <h1 className="text-lg font-semibold">Summary</h1>
 
         <Button
-          asChild
           size="sm"
           variant="outline"
           className="font-normal text-xs"

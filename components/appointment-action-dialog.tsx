@@ -70,7 +70,7 @@ export function AppointmentActionDialog ({
 
   return (
     <Dialog>
-      <DialogTrigger asChild disabled={!disabled}>
+      <DialogTrigger disabled={!disabled}>
         {type === "approve" ? (
           <Button size="sm" variant="ghost" className="w-full justify-start">
             <Check size={16} /> Approve
@@ -133,7 +133,7 @@ export function AppointmentActionDialog ({
             >
               Yes, {type === "approve" ? "Approve" : "Delete"}
             </Button>
-            <DialogClose asChild>
+            <DialogClose>
               <Button
                 variant="outline"
                 className="px-4 py-2 text-sm underline text-gray-500"
