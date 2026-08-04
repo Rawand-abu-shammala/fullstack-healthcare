@@ -1,4 +1,6 @@
+import { ActionDialog } from "@/components/action-dialog";
 import { ViewAction } from "@/components/action-options";
+import { DoctorForm } from "@/components/forms/doctor-form";
 import { Pagination } from "@/components/pagination";
 import { ProfileImage } from "@/components/profile-image";
 import SearchInput from "@/components/search-input";
@@ -10,6 +12,7 @@ import { getAllDoctors } from "@/utils/services/doctor";
 import { Doctor } from "@/lib/generated/prisma/client";
 import { format } from "date-fns";
 import { Users } from "lucide-react";
+import React from "react";
 
 const columns = [
   {
@@ -64,7 +67,7 @@ const DoctorsList = async (props: SearchParamsProps) => {
         <ProfileImage
           url={item?.img ?? ""}
           name={item?.name}
-          bgColor={item?.colorCode ?? "#8a8890"}
+          bgColor={item?.colorCode ?? "#8a790"}
           textClassName="text-black"
         />
         <div>
@@ -79,6 +82,12 @@ const DoctorsList = async (props: SearchParamsProps) => {
         {format(item?.created_at, "yyyy-MM-dd")}
       </td>
       <td>
+        <div className="flex items-center gap-2">
+          <ViewAction href={`doctors/${item?.id}`} />
+          {isAdmin && (
+            <ActionDialog type="delete" id={item?.id} deleteType="doctor" />
+          )}
+        </div>
       </td>
     </tr>
   );
@@ -93,6 +102,10 @@ const DoctorsList = async (props: SearchParamsProps) => {
           <span className="text-gray-600 text-sm xl:text-base">
             total doctors
           </span>
+        </div>
+        <div className="w-full lg:w-fit flex items-center justify-between lg:justify-start gap-2">
+          <SearchInput />
+          {isAdmin && <DoctorForm />}
         </div>
       </div>
 

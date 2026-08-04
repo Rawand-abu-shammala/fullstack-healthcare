@@ -1,4 +1,4 @@
-import React from 'react'
+import { Control } from "react-hook-form";
 import {
   FormControl,
   FormField,
@@ -18,18 +18,17 @@ import { Checkbox } from "./ui/checkbox";
 import { Textarea } from "./ui/textarea";
 import { RadioGroup, RadioGroupItem } from "./ui/radio-group";
 import { Label } from "./ui/label";
-
-
+import { Switch } from "./ui/switch";
 
 interface InputProps {
-    type: "input" | "select" | "checkbox" | "switch" | "radio" | "textarea";
-    control: any;
-    name: string;
-    label?: string;
-    placeholder?: string;
-    inputType?: "text" | "email" | "password" | "date";
-    selectList?: { label: string; value: string}[];
-    defaultValue?: string; 
+  type: "input" | "select" | "checkbox" | "switch" | "radio" | "textarea";
+  control: any;
+  name: string;
+  label?: string;
+  placeholder?: string;
+  inputType?: "text" | "email" | "password" | "date";
+  selectList?: { label: string; value: string }[];
+  defaultValue?: string;
 }
 
 const RenderInput = ({ field, props }: { field: any; props: InputProps }) => {
@@ -45,7 +44,7 @@ const RenderInput = ({ field, props }: { field: any; props: InputProps }) => {
         </FormControl>
       );
 
-      case "select":
+    case "select":
       return (
         <Select onValueChange={field.onChange} value={field?.value}>
           <FormControl>
@@ -63,7 +62,7 @@ const RenderInput = ({ field, props }: { field: any; props: InputProps }) => {
         </Select>
       );
 
-          case "checkbox":
+    case "checkbox":
       return (
         <div className="items-top flex space-x-2">
           <Checkbox
@@ -122,26 +121,100 @@ const RenderInput = ({ field, props }: { field: any; props: InputProps }) => {
       );
   }
 };
+export const CustomInput = (props: InputProps) => {
+  const { name, label, control, type } = props;
 
-
-
-function CustomInput(props: InputProps) {
-    const {name, label, control, type} = props;
   return (
+    // <div className="w-full pt-6">
     <FormField
-        control = {control}
-        name = {name}
-        render = {({ field }) => (
-         <FormItem className="w-full">
-            {type !== "radio" && type !== "checkbox" && (
-                <FormLabel>{label}</FormLabel>
-            )}
-            <RenderInput field = {field} props = {props}/>
-            <FormMessage />
+      control={control}
+      name={name}
+      render={({ field }) => (
+        <FormItem className="w-full">
+          {type !== "radio" && type !== "checkbox" && (
+            <FormLabel>{label}</FormLabel>
+          )}
+          <RenderInput field={field} props={props} />
+          <FormMessage />
         </FormItem>
-        )}
+      )}
     />
-  )
+    // </div>
+  );
+};
+
+type Day = {
+  day: string;
+  start_time?: string;
+  close_time?: string;
+};
+interface SwitchProps {
+  data: { label: string; value: string }[];
+  setWorkSchedule: React.Dispatch<React.SetStateAction<Day[]>>;
 }
 
-export default CustomInput
+export const SwitchInput = ({ data, setWorkSchedule }: SwitchProps) => {
+  const handleChange = (day: string, field: any, value: string) => {
+    setWorkSchedule((prevDays) => {
+      const dayExist = prevDays.find((d) => d.day === day);
+
+      if (dayExist) {
+        return prevDays.map((d) =>
+          d.day === day ? { ...d, [field]: value } : d
+        );
+      } else {
+        if (field === true) {
+          return [
+            ...prevDays,
+            { day, start_time: "09:00", close_time: "17:00" },
+          ];
+        } else {
+          return [...prevDays, { day, [field]: value }];
+        }
+      }
+    });
+  };
+
+  return (
+    <div className="">
+      {data?.map((el, id) => (
+        <div
+          key={id}
+          className="w-full  flex items-center space-y-3 border-t border-t-gray-200  py-3"
+        >
+          <Switch
+            id={el.value}
+            className="data-[state=checked]:bg-blue-600 peer"
+            onCheckedChange={(e) => handleChange(el.value, true, "09:00")}
+          />
+          <Label htmlFor={el.value} className="w-20 capitalize">
+            {el.value}
+          </Label>
+
+          <Label className="text-gray-400 font-normal italic peer-data-[state=checked]:hidden pl-10">
+            Not working on this day
+          </Label>
+
+          <div className="hidden peer-data-[state=checked]:flex items-center gap-2 pl-6:">
+            <Input
+              name={`${el.label}.start_time`}
+              type="time"
+              defaultValue="09:00"
+              onChange={(e) =>
+                handleChange(el.value, "start_time", e.target.value)
+              }
+            />
+            <Input
+              name={`${el.label}.close_time`}
+              type="time"
+              defaultValue="17:00"
+              onChange={(e) =>
+                handleChange(el.value, "close_time", e.target.value)
+              }
+            />
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+};

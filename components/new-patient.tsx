@@ -16,7 +16,7 @@ import { SubmitHandler, useForm, Resolver } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { PatientFormSchema } from "@/lib/schema";
 import { z } from "zod";
-import CustomInput from "./custom-input";
+import { CustomInput } from "./custom-input";
 import { GENDER, MARITAL_STATUS, RELATION } from "@/lib";
 import { Button } from "./ui/button";
 import { createNewPatient, updatePatient } from "@/app/actions/patient";
