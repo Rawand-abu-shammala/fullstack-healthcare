@@ -22,9 +22,11 @@ export default clerkMiddleware(async (auth, req) => {
     return NextResponse.redirect(new URL("/sign-in", url.origin));
   }
 
-  const role = sessionClaims?.metadata?.role ?? "PATIENT";
+  const role = (sessionClaims?.metadata?.role ?? "PATIENT")
+    .toString()
+    .toUpperCase() as Roles;
 
-  if (!matchingRoute.allowedRoles.includes(role as Roles)) {
+  if (!matchingRoute.allowedRoles.includes(role)) {
     return NextResponse.redirect(
       new URL(`/${role.toLowerCase()}`, url.origin)
     );

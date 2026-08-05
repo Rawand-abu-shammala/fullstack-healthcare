@@ -2,17 +2,27 @@ import { MedicalHistoryContainer } from "@/components/medical-history-container"
 import PatientRatingContainer from "@/components/patient-rating-container";
 import { ProfileImage } from "@/components/profile-image";
 import { Card } from "@/components/ui/card";
-import { SmallCard } from "@/components/small-card";
 import { getPatientFullDataById } from "@/utils/services/patient";
 import { auth } from "@clerk/nextjs/server";
 import { format } from "date-fns";
 import Link from "next/link";
-import React from "react";
 
 interface ParamsProps {
   params: Promise<{ patientId: string }>;
   searchParams?: Promise<{ [key: string]: string | string[] | undefined }>;
 }
+
+interface SmallCardProps {
+  label: string;
+  value: string;
+}
+
+const SmallCard = ({ label, value }: SmallCardProps) => (
+  <div className="w-full md:w-1/3">
+    <span className="text-sm text-gray-500">{label}</span>
+    <p className="text-sm md:text-base capitalize">{value}</p>
+  </div>
+);
 
 async function PatientProfile (props: ParamsProps) {
   const searchParams = await props.searchParams;
@@ -29,12 +39,16 @@ async function PatientProfile (props: ParamsProps) {
 
   const { data } = await getPatientFullDataById(id);
 
-  const SmallCard = ({ label, value }: { label: string; value: string }) => (
-    <div className="w-full md:w-1/3">
-      <span className="text-sm text-gray-500">{label}</span>
-      <p className="text-sm md:text-base capitalize">{value}</p>
-    </div>
-  );
+  const formatDate = (value: Date | string | null | undefined) =>
+    value ? format(new Date(value), "yyyy-MM-dd") : "";
+
+  if (!data) {
+    return (
+      <div className="p-8">
+        <p className="text-center text-gray-500">Patient data not found.</p>
+      </div>
+    );
+  }
 
   return (
     <div className="bg-gray-100/60 h-full rounded-xl py-6 px-3 2xl:p-6 flex flex-col lg:flex-row gap-6">
@@ -69,7 +83,7 @@ async function PatientProfile (props: ParamsProps) {
               />
               <SmallCard
                 label="Date of Birth"
-                value={format(data?.date_of_birth ?? "", "yyyy-MM-dd")}
+                value={formatDate(data?.date_of_birth)}
               />
               <SmallCard label={"Phone Number"} value={data?.phone ?? ""} />
             </div>
@@ -93,7 +107,7 @@ async function PatientProfile (props: ParamsProps) {
                 label="Last Visit"
                 value={
                   data?.lastVisit
-                    ? format(data?.lastVisit ?? "", "yyyy-MM-dd")
+                    ? formatDate(data?.lastVisit)
                     : "No last visit"
                 }
               />

@@ -11,7 +11,12 @@ export const PatientFormSchema = z.object({
     .trim()
     .min(2, "dLast name must be at least 2 characters")
     .max(30, "First name can't be more than 50 characters"),
-  date_of_birth: z.date({ message: "Date of birth is required" }),
+  date_of_birth: z.preprocess((arg) => {
+    if (typeof arg === "string" && arg !== "") {
+      return new Date(arg);
+    }
+    return arg;
+  }, z.date({ message: "Date of birth is required" })),
   gender: z.enum(["MALE", "FEMALE"], { message: "Gender is required" }),
 
   phone: z.string().min(10, "Enter phone number").max(10, "Enter phone number"),

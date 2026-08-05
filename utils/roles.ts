@@ -10,5 +10,7 @@ export const checkRole = async (role: Roles) => {
 export const getRole = async (): Promise<Roles> => {
   const { sessionClaims } = await auth();
 
-  return sessionClaims?.metadata?.role ?? "PATIENT";
+  return (
+    sessionClaims?.metadata?.role ?? "PATIENT"
+  ).toString().toUpperCase() as Roles;
 };

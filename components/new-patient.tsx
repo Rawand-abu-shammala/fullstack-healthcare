@@ -91,7 +91,10 @@ function NewPatient({data, type}: DataProps) {
   useEffect(() => {
   if (type === "create") {
     if (userData) {
-      form.reset({ ...userData });
+      form.reset({
+        ...form.getValues(),
+        ...userData,
+      });
     }
   } else if (type === "update") {
     if (data) {

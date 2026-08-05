@@ -34,12 +34,30 @@ interface InputProps {
 function RenderInput ({ field, props }: { field: any; props: InputProps }) {
   switch (props.type) {
     case "input":
+      const dateValue = (() => {
+        if (props.inputType !== "date") return field.value;
+        if (field.value === undefined || field.value === null || field.value === "") {
+          return "";
+        }
+        if (typeof field.value === "string") {
+          return field.value;
+        }
+        const date = new Date(field.value);
+        return !Number.isNaN(date.getTime()) ? date.toISOString().slice(0, 10) : "";
+      })();
+
       return (
         <FormControl>
           <Input
             type={props.inputType}
             placeholder={props.placeholder}
             {...field}
+            value={dateValue}
+            onChange={
+              props.inputType === "date"
+                ? (event) => field.onChange(event.target.value)
+                : field.onChange
+            }
           />
         </FormControl>
       );
