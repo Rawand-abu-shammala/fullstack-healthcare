@@ -26,7 +26,7 @@ import {
   FormMessage,
 } from "../ui/form";
 import { ProfileImage } from "../profile-image";
-import CustomInput from "../custom-input";
+import { CustomInput } from "../custom-input";
 import {
   Select,
   SelectContent,

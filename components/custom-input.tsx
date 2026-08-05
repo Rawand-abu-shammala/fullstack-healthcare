@@ -31,7 +31,7 @@ interface InputProps {
   defaultValue?: string;
 }
 
-const RenderInput = ({ field, props }: { field: any; props: InputProps }) => {
+function RenderInput ({ field, props }: { field: any; props: InputProps }) {
   switch (props.type) {
     case "input":
       return (

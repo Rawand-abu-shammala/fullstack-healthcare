@@ -11,7 +11,7 @@ export const PatientFormSchema = z.object({
     .trim()
     .min(2, "dLast name must be at least 2 characters")
     .max(30, "First name can't be more than 50 characters"),
-  date_of_birth: z.coerce.date(),
+  date_of_birth: z.date({ message: "Date of birth is required" }),
   gender: z.enum(["MALE", "FEMALE"], { message: "Gender is required" }),
 
   phone: z.string().min(10, "Enter phone number").max(10, "Enter phone number"),
@@ -62,6 +62,7 @@ export const PatientFormSchema = z.object({
   img: z.string().optional(),
 });
 
+
 export const AppointmentSchema = z.object({
   doctor_id: z.string().min(1, "Select physician"),
   type: z.string().min(1, "Select type of appointment"),
@@ -93,6 +94,7 @@ export const DoctorSchema = z.object({
     .optional()
     .or(z.literal("")),
 });
+
 
 export const workingDaySchema = z.object({
   day: z.enum([

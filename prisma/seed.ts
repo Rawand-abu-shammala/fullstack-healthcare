@@ -1,4 +1,4 @@
-import prisma from "../lib/db";
+import { prisma } from "../lib/db";
 import { fakerDE as faker } from "@faker-js/faker";
 import { generateRandomColor } from "@/utils";
 
