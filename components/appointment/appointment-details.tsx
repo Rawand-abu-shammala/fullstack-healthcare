@@ -4,14 +4,12 @@ import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
 
 interface AppointmentDetailsProps {
   id: number | string;
-  patient_id: string;
   appointment_date: Date;
   time: string;
   notes?: string;
 }
 export function AppointmentDetails ({
   id,
-  patient_id,
   appointment_date,
   time,
   notes,

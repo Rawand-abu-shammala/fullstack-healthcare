@@ -1,6 +1,6 @@
 "use server";
 
-import { prisma }from "@/lib/db";
+import { prisma } from "@/lib/db";
 import {
   DoctorSchema,
   ServicesSchema,
@@ -49,7 +49,7 @@ export async function createNewStaff(data: any) {
 
     delete validatedValues["password"];
 
-    const doctor = await prisma.staff.create({
+    await prisma.staff.create({
       data: {
         name: validatedValues.name,
         phone: validatedValues.phone,

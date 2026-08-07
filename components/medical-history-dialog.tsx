@@ -3,16 +3,10 @@ import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
 import React from "react";
 
 interface DataProps {
-  id: string | number;
-  patientId: string;
   medicalId?: string;
-  doctor_id: string | number;
   label: React.ReactNode;
 }
 export async function MedicalHistoryDialog ({
-  id,
-  patientId,
-  doctor_id,
   label,
 }: DataProps){
   return (

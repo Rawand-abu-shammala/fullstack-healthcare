@@ -4,7 +4,7 @@ import { DoctorSchema } from "@/lib/schema";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "next/navigation";
 import React, { useEffect, useState } from "react";
-import { useForm } from "react-hook-form";
+import { useForm, useWatch } from "react-hook-form";
 import { z } from "zod";
 import {
   Sheet,
@@ -94,7 +94,10 @@ export const DoctorForm = () => {
     }
   };
 
-  const selectedSpecialization = form.watch("specialization");
+  const selectedSpecialization = useWatch({
+    control: form.control,
+    name: "specialization",
+  });
 
   useEffect(() => {
     if (selectedSpecialization) {
@@ -106,7 +109,7 @@ export const DoctorForm = () => {
         form.setValue("department", department.department);
       }
     }
-  }, [selectedSpecialization]);
+  }, [selectedSpecialization, form]);
 
   return (
     <Sheet>

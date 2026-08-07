@@ -172,7 +172,7 @@ export async function BillsContainer ({ id }: { id: string }) {
         <div className="w-[120px]">
           <span className="text-gray-500">Unpaid Amount</span>
           <p className="text-xl font-semibold text-red-600">
-            {(discount?.finalAmount! - data?.amount_paid! || 0.0).toFixed(2)}
+            {(((discount?.finalAmount ?? 0) - (data?.amount_paid ?? 0)) || 0).toFixed(2)}
           </p>
         </div>
       </div>

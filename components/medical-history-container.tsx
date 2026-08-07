@@ -3,11 +3,10 @@ import React from "react";
 import { MedicalHistory } from "./medical-history";
 
 interface DataProps {
-  id?: number | string;
   patientId: string;
 }
 
-export async function MedicalHistoryContainer ({ id, patientId }: DataProps) {
+export async function MedicalHistoryContainer ({ patientId }: DataProps) {
   const data = await prisma.medicalRecords.findMany({
     where: { patient_id: patientId },
     include: {

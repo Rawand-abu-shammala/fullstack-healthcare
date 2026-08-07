@@ -3,8 +3,8 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Plus } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
-import { useForm, Resolver } from "react-hook-form";
+import { useEffect, useMemo, useState } from "react";
+import { useForm, Resolver, useWatch } from "react-hook-form";
 import { toast } from "sonner";
 
 import { PatientBillSchema } from "@/lib/schema";
@@ -31,7 +31,6 @@ interface DataProps {
 export const AddBills = ({ id, appId, servicesData }: DataProps) => {
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
-  const [data, setData] = useState<any>();
 
   type PatientBillSchema = z.infer<typeof PatientBillSchema>;
 
@@ -70,19 +69,23 @@ export const AddBills = ({ id, appId, servicesData }: DataProps) => {
     }
   };
 
-  useEffect(() => {
-    if (servicesData) {
-      setData(
-        servicesData?.map((service) => ({
-          value: service.id.toString(),
-          label: service.service_name,
-        }))
-      );
-    }
-  }, [servicesData, id]);
+  const serviceOptions = useMemo(
+    () =>
+      servicesData?.map((service) => ({
+        value: service.id.toString(),
+        label: service.service_name,
+      })),
+    [servicesData]
+  );
 
-  const selectedService = form.watch("service_id");
-  const quantity = form.watch("quantity");
+  const selectedService = useWatch({
+    control: form.control,
+    name: "service_id",
+  });
+  const quantity = useWatch({
+    control: form.control,
+    name: "quantity",
+  });
 
   useEffect(() => {
     if (selectedService) {
@@ -101,7 +104,7 @@ export const AddBills = ({ id, appId, servicesData }: DataProps) => {
         }
       }
     }
-  }, [selectedService, quantity]);
+  }, [selectedService, quantity, servicesData, form]);
 
   return (
     <>
@@ -133,7 +136,7 @@ export const AddBills = ({ id, appId, servicesData }: DataProps) => {
                   name="service_id"
                   placeholder="Select service"
                   label="Service Name"
-                  selectList={data!}
+                  selectList={serviceOptions!}
                 />
                 <CustomInput
                   type="input"
