@@ -39,7 +39,6 @@ const AppointmentDetailsPage = async ({
           <>
             <AppointmentDetails
               id={data.id}
-              patient_id={data.patient_id}
               appointment_date={data.appointment_date}
               time={data.time}
               notes={data.note}
@@ -60,7 +59,7 @@ const AppointmentDetailsPage = async ({
           />
         )}
         {cat === "medical-history" && (
-          <MedicalHistoryContainer id={id} patientId={data.patient_id} />
+          <MedicalHistoryContainer patientId={data.patient_id} />
         )}
         {cat === "billing" && <BillsContainer id={id} />}
         {cat === "payments" && (

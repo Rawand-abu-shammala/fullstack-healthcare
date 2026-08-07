@@ -6,7 +6,7 @@ interface AppointmentDetailsProps {
   id: number | string;
   appointment_date: Date;
   time: string;
-  notes?: string;
+  notes?: string | null;
 }
 export function AppointmentDetails ({
   id,

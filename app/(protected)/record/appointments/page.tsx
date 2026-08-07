@@ -94,7 +94,7 @@ const Appointments = async (props: {
       >
         <td className="flex items-center gap-2 md:gap-4 py-2 xl:py-4">
           <ProfileImage
-            url={item?.patient?.img ?? ""}
+            url={item?.patient?.img}
             name={patient_name}
             bgColor={item?.patient?.colorCode ?? "#8a8607"}
           />
@@ -114,7 +114,7 @@ const Appointments = async (props: {
         <td className="hidden  items-center py-2  md:table-cell">
           <div className="flex items-center  gap-2 md:gap-4">
             <ProfileImage
-              url={item.doctor?.img ?? ""}
+              url={item.doctor?.img}
               name={item.doctor?.name}
               bgColor={item?.doctor?.colorCode ?? "#8a8607"}
               textClassName="text-black"

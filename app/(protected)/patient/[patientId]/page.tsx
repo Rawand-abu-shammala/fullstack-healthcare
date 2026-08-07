@@ -56,7 +56,7 @@ async function PatientProfile (props: ParamsProps) {
         <div className="w-full flex flex-col lg:flex-row gap-4">
           <Card className="bg-white rounded-xl p-4 w-full lg:w-[30%] border-none flex flex-col items-center">
             <ProfileImage
-              url={data?.img ?? ""}
+              url={data?.img}
               name={data?.first_name + " " + data?.last_name}
               className="h-20 w-20 md:flex"
               bgColor={data?.colorCode ?? "#8a8067"}
@@ -79,29 +79,29 @@ async function PatientProfile (props: ParamsProps) {
             <div className="flex flex-col md:flex-row md:flex-wrap md:items-center xl:justify-between gap-y-4 md:gap-x-0">
               <SmallCard
                 label={"Gender"}
-                value={data?.gender?.toLowerCase() ?? ""}
+                value={data?.gender?.toLowerCase() ?? "—"}
               />
               <SmallCard
                 label="Date of Birth"
                 value={formatDate(data?.date_of_birth)}
               />
-              <SmallCard label={"Phone Number"} value={data?.phone ?? ""} />
+              <SmallCard label={"Phone Number"} value={data?.phone ?? "—"} />
             </div>
 
             <div className="flex flex-col md:flex-row md:flex-wrap md:items-center xl:justify-between gap-y-4 md:gap-x-0">
-              <SmallCard label="Marital Status" value={data?.marital_status ?? ""} />
-              <SmallCard label="Blood Group" value={data?.blood_group ?? ""} />
-              <SmallCard label="Address" value={data?.address ?? ""} />
+              <SmallCard label="Marital Status" value={data?.marital_status ?? "—"} />
+              <SmallCard label="Blood Group" value={data?.blood_group ?? "—"} />
+              <SmallCard label="Address" value={data?.address ?? "—"} />
             </div>
 
             <div className="flex flex-col md:flex-row md:flex-wrap md:items-center xl:justify-between gap-y-4 md:gap-x-0">
               <SmallCard
                 label="Contact Person"
-                value={data?.emergency_contact_name ?? ""}
+                value={data?.emergency_contact_name ?? "—"}
               />
               <SmallCard
                 label="Emergency Contact"
-                value={data?.emergency_contact_number ?? ""}
+                value={data?.emergency_contact_number ?? "—"}
               />
               <SmallCard
                 label="Last Visit"

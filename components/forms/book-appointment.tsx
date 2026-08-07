@@ -124,7 +124,7 @@ export const BookAppointment = ({
               >
                 <div className="w-full rounded-md border border-input bg-background px-3 py-1 flex items-center gap-4">
                   <ProfileImage
-                    url={data?.img ?? ""}
+                    url={data?.img}
                     name={patientName}
                     className="size-16 border border-input"
                     bgColor={data?.colorCode ?? "8a8706"}
@@ -168,7 +168,7 @@ export const BookAppointment = ({
                             <SelectItem key={id} value={i.id} className="p-2">
                               <div className="flex flex-row gap-2 p-2">
                                 <ProfileImage
-                                  url={i?.img ?? ""}
+                                  url={i?.img}
                                   name={i?.name}
                                   bgColor={i?.colorCode ?? "8a8706"}
                                   textClassName="text-black"

@@ -105,7 +105,7 @@ export async function addNewBill(data: any) {
       data: {
         bill_id: Number(bill_info?.id),
         service_id: Number(validatedData?.service_id),
-        service_date: new Date(validatedData?.service_date ?? ""),
+        service_date: new Date(validatedData?.service_date ?? new Date()),
         quantity: Number(validatedData?.quantity),
         unit_cost: Number(validatedData?.unit_cost),
         total_cost: Number(validatedData?.total_cost),

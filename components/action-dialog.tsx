@@ -120,7 +120,7 @@ export function ActionDialog ({
           <div className="flex justify-between">
             <div className="flex gap-3 items-center">
               <ProfileImage
-                url={data?.img ?? ""}
+                url={data?.img}
                 name={data?.name}
                 className="xl:size-20"
                 bgColor={data?.colorCode ?? "#8a8760"}

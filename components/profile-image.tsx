@@ -9,7 +9,7 @@ export function ProfileImage ({
   textClassName,
   bgColor,
 }: {
-  url?: string;
+  url?: string | null;
   name: string;
   className?: string;
   textClassName?: string;
@@ -19,7 +19,7 @@ export function ProfileImage ({
     return (
       <Image
         src={url}
-        alt={name}
+        alt={name || "User profile"}
         height={40}
         width={40}
         className={cn(

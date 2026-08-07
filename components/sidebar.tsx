@@ -41,7 +41,7 @@ async function sidebar() {
           links: [
             {
               name: "Dashboard",
-              href: "/",
+              href: "/dashboard",
               access: ACCESS_LEVELS_ALL,
               icon: LayoutDashboard,
             },

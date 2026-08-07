@@ -76,7 +76,7 @@ const MedicalRecordsPage = async (props: SearchParamsProps) => {
       >
         <td className="flex items-center gap-4 p-4">
           <ProfileImage
-            url={item?.patient?.img ?? ""}
+            url={item?.patient?.img}
             name={name}
             bgColor={patient?.colorCode ?? "#8a7890"}
             textClassName="text-black"

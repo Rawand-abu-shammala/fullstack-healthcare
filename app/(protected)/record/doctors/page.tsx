@@ -65,7 +65,7 @@ const DoctorsList = async (props: SearchParamsProps) => {
     >
       <td className="flex items-center gap-4 p-4">
         <ProfileImage
-          url={item?.img ?? ""}
+          url={item?.img}
           name={item?.name}
           bgColor={item?.colorCode ?? "#8a790"}
           textClassName="text-black"

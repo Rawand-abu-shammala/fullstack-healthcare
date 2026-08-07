@@ -63,7 +63,7 @@ export async function MedicalHistory ({ data, isShowProfile }: DataProps) {
         {isShowProfile && (
           <td className="flex items-center gap-2 2xl:gap-4 py-2 xl:py-4">
             <ProfileImage
-              url={item?.patient?.img ?? ""}
+              url={item?.patient?.img}
               name={item?.patient?.first_name + " " + item?.patient?.last_name}
             />
             <div>
@@ -90,9 +90,6 @@ export async function MedicalHistory ({ data, isShowProfile }: DataProps) {
           ) : (
             <>
               <MedicalHistoryDialog
-                id={item?.appointment_id}
-                patientId={item?.patient_id}
-                doctor_id={item?.doctor_id}
                 label={
                   <div className="flex gap-x-2 items-center text-lg">
                     {item?.diagnosis?.length}

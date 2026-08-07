@@ -48,7 +48,7 @@ export function RecentAppointments ({ data }: DataProps) {
       >
         <td className="flex items-center gap-2 2xl:gap-4 py-2 xl:py-4">
           <ProfileImage
-            url={item?.patient?.img ?? ""}
+            url={item?.patient?.img}
             name={name}
             className="bg-violet-600"
             bgColor={item?.patient?.colorCode ?? "#7c3aed" }
@@ -73,7 +73,7 @@ export function RecentAppointments ({ data }: DataProps) {
           "
           >
             <ProfileImage
-              url={item?.patient?.img ?? ""}
+              url={item?.patient?.img}
               name={item?.doctor?.name}
               className="bg-blue-600"
               bgColor={item?.patient?.colorCode ?? "#7c3aed"}

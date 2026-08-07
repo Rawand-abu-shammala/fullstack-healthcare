@@ -50,7 +50,7 @@ const columns = [
   },
   {
     header: "Paid",
-    key: "payable",
+    key: "paid",
     className: "hidden xl:table-cell",
   },
   {
@@ -94,7 +94,7 @@ const BillingPage = async (props: SearchParamsProps) => {
         <td># {item?.id}</td>
         <td className="flex items-center gap-4 p-4">
           <ProfileImage
-            url={item?.patient?.img ?? ""}
+            url={item?.patient?.img}
             name={name}
             bgColor={patient?.colorCode ?? "#8a7890"}
             textClassName="text-black"

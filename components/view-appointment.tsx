@@ -64,7 +64,7 @@ export async function ViewAppointment({ id }: { id: string | undefined }) {
             <div className="flex flex-col md:flex-row gap-6 mb-16">
               <div className="flex gap-1 w-full md:w-1/2">
                 <ProfileImage
-                  url={data?.patient?.img ?? ""}
+                  url={data?.patient?.img}
                   name={
                     data?.patient?.first_name + " " + data?.patient?.last_name
                   }
@@ -131,7 +131,7 @@ export async function ViewAppointment({ id }: { id: string | undefined }) {
             <div className="w-full flex flex-col md:flex-row gap-8 mb-8">
               <div className="flex gap-3">
                 <ProfileImage
-                  url={data?.doctor?.img ?? ""}
+                  url={data?.doctor?.img}
                   name={data?.doctor?.name}
                   className="xl:size-20 bg-emerald-600"
                   textClassName="xl:text-2xl"

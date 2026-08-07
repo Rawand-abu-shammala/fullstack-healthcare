@@ -7,6 +7,7 @@ import Link from "next/link";
 import { AppointmentActionDialog } from "./appointment-action-dialog";
 
 interface ActionsProps {
+  userId?: string | null;
   status: string;
   patientId: string;
   doctorId: string;
@@ -14,6 +15,7 @@ interface ActionsProps {
 }
 
 export async function AppointmentActionOptions ({
+  userId,
   patientId,
   doctorId,
   status,
@@ -21,6 +23,7 @@ export async function AppointmentActionOptions ({
 }: ActionsProps) {
   const user = await auth();
   const isAdmin = await checkRole("ADMIN");
+  const currentUserId = userId ?? user.userId;
 
   return (
     <Popover>
@@ -50,7 +53,7 @@ export async function AppointmentActionOptions ({
             <AppointmentActionDialog
               type="approve"
               id={appointmentId}
-              disabled={isAdmin || user.userId === doctorId}
+              disabled={isAdmin || currentUserId === doctorId}
             />
           )}
           <AppointmentActionDialog
@@ -58,7 +61,7 @@ export async function AppointmentActionOptions ({
             id={appointmentId}
             disabled={
               status === "PENDING" &&
-              (isAdmin || user.userId === doctorId || user.userId === patientId)
+              (isAdmin || currentUserId === doctorId || currentUserId === patientId)
             }
           />
         </div>
