@@ -35,31 +35,20 @@ cd fullstack-healthcare
 
 ```bash
 npm install
-```
 
-### 3. Configure environment variables
-
-Create a file named `.env.local` in the project root and add your environment variables:
-
-```env
-DATABASE_URL=your_database_url
-NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=your_clerk_publishable_key
-CLERK_SECRET_KEY=your_clerk_secret_key
-```
-
-### 4. Generate Prisma client
+### 3. Generate Prisma client
 
 ```bash
 npx prisma generate
 ```
 
-### 5. Run database migrations
+### 4. Run database migrations
 
 ```bash
 npx prisma migrate dev --name init
 ```
 
-### 6. Start the development server
+### 5. Start the development server
 
 ```bash
 npm run dev
