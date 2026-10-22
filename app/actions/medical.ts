@@ -175,15 +175,27 @@ export async function addNewBill(data: unknown) {
       }
     }
 
-    await prisma.patientBills.create({
-      data: {
-        bill_id: payment.id,
-        service_id: service.id,
-        service_date: serviceDate,
-        quantity,
-        unit_cost: service.price,
-        total_cost: service.price * quantity,
-      },
+    await prisma.$transaction(async (tx) => {
+      await tx.patientBills.create({
+        data: {
+          bill_id: payment.id,
+          service_id: service.id,
+          service_date: serviceDate,
+          quantity,
+          unit_cost: service.price,
+          total_cost: service.price * quantity,
+        },
+      });
+
+      const billTotal = await tx.patientBills.aggregate({
+        where: { bill_id: payment.id },
+        _sum: { total_cost: true },
+      });
+
+      await tx.payment.update({
+        where: { id: payment.id },
+        data: { total_amount: billTotal._sum.total_cost ?? 0 },
+      });
     });
 
     return {

@@ -255,17 +255,21 @@ export async function getAllPatients({
     const LIMIT = Number(limit) || 10;
 
     const SKIP = (PAGE_NUMBER - 1) * LIMIT;
+    const searchTerm = search?.trim();
+    const where = searchTerm
+      ? {
+          OR: [
+            { first_name: { contains: searchTerm, mode: "insensitive" as const } },
+            { last_name: { contains: searchTerm, mode: "insensitive" as const } },
+            { phone: { contains: searchTerm, mode: "insensitive" as const } },
+            { email: { contains: searchTerm, mode: "insensitive" as const } },
+          ],
+        }
+      : {};
 
     const [patients, totalRecords] = await Promise.all([
       prisma.patient.findMany({
-        where: {
-          OR: [
-            { first_name: { contains: search, mode: "insensitive" } },
-            { last_name: { contains: search, mode: "insensitive" } },
-            { phone: { contains: search, mode: "insensitive" } },
-            { email: { contains: search, mode: "insensitive" } },
-          ],
-        },
+        where,
         include: {
           appointments: {
             select: {
@@ -287,7 +291,7 @@ export async function getAllPatients({
         orderBy: { first_name: "asc" },
       }),
 
-      prisma.patient.count(),
+      prisma.patient.count({ where }),
     ]);
 
     const totalPages = Math.ceil(totalRecords / LIMIT);

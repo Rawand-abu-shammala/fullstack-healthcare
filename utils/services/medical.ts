@@ -30,14 +30,15 @@ export const getVitalSignData = async (id: string) => {
   }));
 
   const formattedData = data.map((record) => {
-    const heartRates = record.heartRate
+    const [parsedValue1, parsedValue2] = record.heartRate
       .split("-")
-      .map((rate) => parseInt(rate.trim()));
+      .map((rate) => Number.parseInt(rate.trim(), 10));
+    const value1 = Number.isFinite(parsedValue1) ? parsedValue1 : 0;
 
     return {
       label: format(new Date(record.created_at), "MMM d"),
-      value1: heartRates[0],
-      value2: heartRates[1],
+      value1,
+      value2: Number.isFinite(parsedValue2) ? parsedValue2 : value1,
     };
   });
 
@@ -49,15 +50,15 @@ export const getVitalSignData = async (id: string) => {
 
   const count = data?.length;
 
-  const averageSystolic = totalSystolic / count;
-  const averageDiastolic = totalDiastolic / count;
+  const averageSystolic = count ? totalSystolic / count : 0;
+  const averageDiastolic = count ? totalDiastolic / count : 0;
 
-  const averageValue1 = totalValue1 / count;
-  const averageValue2 = totalValue2 / count;
+  const averageValue1 = count ? totalValue1 / count : 0;
+  const averageValue2 = count ? totalValue2 / count : 0;
 
   const average = `${averageSystolic.toFixed(2)}/${averageDiastolic.toFixed(
     2
-  )} mg/dL`;
+  )} mmHg`;
   const averageHeartRate = `${averageValue1.toFixed(2)}-${averageValue2.toFixed(
     2
   )} bpm`;

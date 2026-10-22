@@ -44,7 +44,20 @@ export async function deleteDataById(
         await prisma.payment.delete({ where: { id: Number(id) } });
         break;
       case "bill":
-        await prisma.patientBills.delete({ where: { id: Number(id) } });
+        await prisma.$transaction(async (tx) => {
+          const bill = await tx.patientBills.delete({
+            where: { id: Number(id) },
+            select: { bill_id: true },
+          });
+          const billTotal = await tx.patientBills.aggregate({
+            where: { bill_id: bill.bill_id },
+            _sum: { total_cost: true },
+          });
+          await tx.payment.update({
+            where: { id: bill.bill_id },
+            data: { total_amount: billTotal._sum.total_cost ?? 0 },
+          });
+        });
         break;
     }
 

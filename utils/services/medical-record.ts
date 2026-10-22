@@ -16,21 +16,24 @@ export async function getMedicalRecords({
 
     const SKIP = (PAGE_NUMBER - 1) * LIMIT;
 
-    const where: Prisma.MedicalRecordsWhereInput = {
-      OR: [
-        {
-          patient: {
-            first_name: { contains: search, mode: "insensitive" },
-          },
-        },
-        {
-          patient: {
-            last_name: { contains: search, mode: "insensitive" },
-          },
-        },
-        { patient_id: { contains: search, mode: "insensitive" } },
-      ],
-    };
+    const searchTerm = search?.trim();
+    const where: Prisma.MedicalRecordsWhereInput = searchTerm
+      ? {
+          OR: [
+            {
+              patient: {
+                first_name: { contains: searchTerm, mode: "insensitive" },
+              },
+            },
+            {
+              patient: {
+                last_name: { contains: searchTerm, mode: "insensitive" },
+              },
+            },
+            { patient_id: { contains: searchTerm, mode: "insensitive" } },
+          ],
+        }
+      : {};
 
     const [data, totalRecords] = await Promise.all([
       prisma.medicalRecords.findMany({

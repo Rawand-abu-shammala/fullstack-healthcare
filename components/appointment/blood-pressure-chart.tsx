@@ -35,7 +35,7 @@ function BloodPressureChart ({ data, average }: BloodPressureChartProps) {
         <div className="flex justify-between items-center mb-4">
           <div>
             <p className="text-lg xl:text-xl font-semibold">
-              {lastData?.systolic || 0}/ {lastData?.diastolic || 0} mg/dL
+              {lastData?.systolic || 0}/ {lastData?.diastolic || 0} mmHg
             </p>
             <p className="text-sm text-muted-foreground">Recent Reading</p>
           </div>

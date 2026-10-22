@@ -106,7 +106,7 @@ const MedicalRecordsPage = async (props: SearchParamsProps) => {
         </td>
 
         <td>
-          <ViewAction href={`/appointments/${item?.appointment_id}`} />
+          <ViewAction href={`/record/appointments/${item?.appointment_id}`} />
         </td>
       </tr>
     );

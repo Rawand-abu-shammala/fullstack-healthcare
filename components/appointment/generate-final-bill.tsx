@@ -51,7 +51,7 @@ export function GenerateFinalBills ({ id, total_bill }: DataProps) {
         router.refresh();
 
         form.reset();
-      } else if (resp.error) {
+      } else {
         toast.error(resp.msg);
       }
     } catch (error) {
