@@ -6,11 +6,10 @@ export const routeAccess: Record<string, Roles[]> = {
   "/patient(.*)": ["PATIENT", "ADMIN", "DOCTOR"],
 
   "/record/users": ["ADMIN"],
+  "/record/appointments(.*)": ["ADMIN", "DOCTOR", "NURSE", "PATIENT"],
+  "/record/medical-records(.*)": ["ADMIN", "DOCTOR", "NURSE"],
+  "/record/billing(.*)": ["ADMIN", "DOCTOR"],
   "/record/doctors(.*)": ["ADMIN", "DOCTOR"],
-  "/record/doctors": ["ADMIN", "DOCTOR"],
-  "/record/patients": ["ADMIN", "DOCTOR"],
+  "/record/patients": ["ADMIN", "DOCTOR", "NURSE"],
   "/record/staffs": ["ADMIN", "DOCTOR"],
 };
-
-
-

@@ -4,6 +4,8 @@ import { ProfileImage } from "@/components/profile-image";
 import { Card } from "@/components/ui/card";
 import { getPatientFullDataById } from "@/utils/services/patient";
 import { auth } from "@clerk/nextjs/server";
+import { notFound, redirect } from "next/navigation";
+import { getRole } from "@/utils/roles";
 import { format } from "date-fns";
 import Link from "next/link";
 
@@ -28,14 +30,14 @@ async function PatientProfile (props: ParamsProps) {
   const searchParams = await props.searchParams;
   const params = await props.params;
 
-  let id = params.patientId;
   const patientId = params.patientId;
   const cat = searchParams?.cat || "medical-history";
+  const { userId } = await auth();
+  if (!userId) redirect("/sign-in");
 
-  if (patientId === "self") {
-    const { userId } = await auth();
-    id = userId!;
-  } else id = patientId;
+  const role = await getRole();
+  if (patientId !== "self" && role === "PATIENT") notFound();
+  const id = patientId === "self" ? userId : patientId;
 
   const { data } = await getPatientFullDataById(id);
 

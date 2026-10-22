@@ -7,32 +7,83 @@ import {
   PatientBillSchema,
   PaymentSchema,
 } from "@/lib/schema";
+import { auth } from "@clerk/nextjs/server";
 import { checkRole } from "@/utils/roles";
+
+const canManageBilling = async () =>
+  (await checkRole("ADMIN")) || (await checkRole("DOCTOR"));
 
 export const addDiagnosis = async (
   data: DiagnosisFormData,
   appointmentId: string
 ) => {
   try {
-    const validatedData = DiagnosisSchema.parse(data);
+    const { userId } = await auth();
+    if (!userId) return { error: "Unauthorized" };
 
-    let medicalRecord = null;
+    const isAuthorizedStaff =
+      (await checkRole("ADMIN")) ||
+      (await checkRole("DOCTOR")) ||
+      (await checkRole("NURSE"));
+    if (!isAuthorizedStaff) return { error: "Unauthorized" };
 
-    if (!validatedData.medical_id) {
-      medicalRecord = await prisma.medicalRecords.create({
-        data: {
-          patient_id: validatedData.patient_id,
-          doctor_id: validatedData.doctor_id,
-          appointment_id: Number(appointmentId),
-        },
-      });
+    const parsed = DiagnosisSchema.safeParse(data);
+    const numericAppointmentId = Number(appointmentId);
+    if (
+      !parsed.success ||
+      !Number.isSafeInteger(numericAppointmentId) ||
+      numericAppointmentId <= 0
+    ) {
+      return { error: "Invalid diagnosis data" };
     }
 
-    const med_id = validatedData.medical_id || medicalRecord?.id;
+    const appointment = await prisma.appointment.findUnique({
+      where: { id: numericAppointmentId },
+      select: { id: true, patient_id: true, doctor_id: true },
+    });
+    if (
+      !appointment ||
+      parsed.data.patient_id !== appointment.patient_id ||
+      parsed.data.doctor_id !== appointment.doctor_id ||
+      ((await checkRole("DOCTOR")) && appointment.doctor_id !== userId)
+    ) {
+      return { error: "Unauthorized" };
+    }
+
+    let medicalId = parsed.data.medical_id
+      ? Number(parsed.data.medical_id)
+      : undefined;
+    if (medicalId) {
+      const record = await prisma.medicalRecords.findFirst({
+        where: {
+          id: medicalId,
+          appointment_id: appointment.id,
+          patient_id: appointment.patient_id,
+          doctor_id: appointment.doctor_id,
+        },
+        select: { id: true },
+      });
+      if (!record) return { error: "Invalid medical record" };
+    } else {
+      const record = await prisma.medicalRecords.create({
+        data: {
+          patient_id: appointment.patient_id,
+          doctor_id: appointment.doctor_id,
+          appointment_id: appointment.id,
+        },
+        select: { id: true },
+      });
+      medicalId = record.id;
+    }
+
+    const { medical_id: _medicalId, ...diagnosisData } = parsed.data;
+    void _medicalId;
     await prisma.diagnosis.create({
       data: {
-        ...validatedData,
-        medical_id: Number(med_id),
+        ...diagnosisData,
+        patient_id: appointment.patient_id,
+        doctor_id: appointment.doctor_id,
+        medical_id: medicalId,
       },
     });
 
@@ -42,119 +93,172 @@ export const addDiagnosis = async (
       status: 201,
     };
   } catch (error) {
-    console.log(error);
-    return {
-      error: "Failed to add diagnosis",
-    };
+    console.error("Failed to add diagnosis", error);
+    return { error: "Failed to add diagnosis" };
   }
 };
 
-export async function addNewBill(data: any) {
+export async function addNewBill(data: unknown) {
   try {
-    const isAdmin = await checkRole("ADMIN");
-    const isDoctor = await checkRole("DOCTOR");
-
-    if (!isAdmin && !isDoctor) {
-      return {
-        success: false,
-        msg: "You are not authorized to add a bill",
-      };
+    const { userId } = await auth();
+    if (!userId || !(await canManageBilling())) {
+      return { success: false, msg: "You are not authorized to add a bill" };
     }
 
-    const isValidData = PatientBillSchema.safeParse(data);
+    const parsed = PatientBillSchema.safeParse(data);
+    if (!parsed.success) {
+      return { success: false, msg: "Invalid bill data" };
+    }
 
-    const validatedData = isValidData.data;
-    let bill_info = null;
+    const appointmentId = Number(parsed.data.appointment_id);
+    const serviceId = Number(parsed.data.service_id);
+    const quantity = Number(parsed.data.quantity);
+    const serviceDate = new Date(parsed.data.service_date);
+    if (
+      !Number.isSafeInteger(appointmentId) ||
+      appointmentId <= 0 ||
+      !Number.isSafeInteger(serviceId) ||
+      serviceId <= 0 ||
+      !Number.isSafeInteger(quantity) ||
+      quantity <= 0 ||
+      Number.isNaN(serviceDate.getTime())
+    ) {
+      return { success: false, msg: "Invalid bill data" };
+    }
 
-    if (!data?.bill_id || data?.bill_id === "undefined") {
-      const info = await prisma.appointment.findUnique({
-        where: { id: Number(data?.appointment_id)! },
-        select: {
-          id: true,
-          patient_id: true,
-          bills: {
-            where: {
-              appointment_id: Number(data?.appointment_id),
-            },
-          },
-        },
+    const [appointment, service] = await Promise.all([
+      prisma.appointment.findUnique({
+        where: { id: appointmentId },
+        select: { id: true, patient_id: true, doctor_id: true },
+      }),
+      prisma.services.findUnique({
+        where: { id: serviceId },
+        select: { id: true, price: true },
+      }),
+    ]);
+    if (!appointment || !service) {
+      return { success: false, msg: "Appointment or service not found" };
+    }
+
+    if ((await checkRole("DOCTOR")) && appointment.doctor_id !== userId) {
+      return { success: false, msg: "Unauthorized" };
+    }
+
+    let payment = null;
+    const requestedPaymentId = Number(parsed.data.bill_id);
+    if (Number.isSafeInteger(requestedPaymentId) && requestedPaymentId > 0) {
+      payment = await prisma.payment.findFirst({
+        where: { id: requestedPaymentId, appointment_id: appointmentId },
+        select: { id: true },
       });
-
-      if (!info?.bills?.length) {
-        bill_info = await prisma.payment.create({
-          data: {
-            appointment_id: Number(data?.appointment_id),
-            patient_id: info?.patient_id ?? "",
-            bill_date: new Date(),
-            payment_date: new Date(),
-            discount: 0.0,
-            amount_paid: 0.0,
-            total_amount: 0.0,
-          },
-        });
-      } else {
-        bill_info = info?.bills[0];
+      if (!payment) {
+        return { success: false, msg: "Invalid appointment bill" };
       }
     } else {
-      bill_info = {
-        id: data?.bill_id,
-      };
+      payment = await prisma.payment.findUnique({
+        where: { appointment_id: appointmentId },
+        select: { id: true },
+      });
+      if (!payment) {
+        payment = await prisma.payment.create({
+          data: {
+            appointment_id: appointmentId,
+            patient_id: appointment.patient_id,
+            bill_date: new Date(),
+            payment_date: new Date(),
+            discount: 0,
+            amount_paid: 0,
+            total_amount: 0,
+          },
+          select: { id: true },
+        });
+      }
     }
 
     await prisma.patientBills.create({
       data: {
-        bill_id: Number(bill_info?.id),
-        service_id: Number(validatedData?.service_id),
-        service_date: new Date(validatedData?.service_date ?? new Date()),
-        quantity: Number(validatedData?.quantity),
-        unit_cost: Number(validatedData?.unit_cost),
-        total_cost: Number(validatedData?.total_cost),
+        bill_id: payment.id,
+        service_id: service.id,
+        service_date: serviceDate,
+        quantity,
+        unit_cost: service.price,
+        total_cost: service.price * quantity,
       },
     });
 
     return {
       success: true,
       error: false,
-      msg: `Bill added successfully`,
+      msg: "Bill added successfully",
     };
   } catch (error) {
-    console.log(error);
+    console.error("Failed to add bill", error);
     return { success: false, msg: "Internal Server Error" };
   }
 }
 
-export async function generateBill(data: any) {
+export async function generateBill(data: unknown) {
   try {
-    const isValidData = PaymentSchema.safeParse(data);
+    const { userId } = await auth();
+    if (!userId || !(await canManageBilling())) {
+      return { success: false, msg: "You are not authorized to generate a bill" };
+    }
 
-    const validatedData = isValidData.data;
+    const parsed = PaymentSchema.safeParse(data);
+    if (!parsed.success) {
+      return { success: false, msg: "Invalid bill data" };
+    }
 
-    const discountAmount =
-      (Number(validatedData?.discount) / 100) *
-      Number(validatedData?.total_amount);
+    const paymentId = Number(parsed.data.id);
+    const discountPercentage = Number(parsed.data.discount);
+    if (
+      !Number.isSafeInteger(paymentId) ||
+      paymentId <= 0 ||
+      !Number.isFinite(discountPercentage) ||
+      discountPercentage < 0 ||
+      discountPercentage > 100
+    ) {
+      return { success: false, msg: "Invalid bill data" };
+    }
 
-    const res = await prisma.payment.update({
-      data: {
-        bill_date: validatedData?.bill_date,
-        discount: discountAmount,
-        total_amount: Number(validatedData?.total_amount)!,
-      },
-      where: { id: Number(validatedData?.id) },
+    const payment = await prisma.payment.findUnique({
+      where: { id: paymentId },
+      select: { id: true, appointment_id: true, appointment: { select: { doctor_id: true } } },
     });
+    if (!payment) return { success: false, msg: "Bill not found" };
+    if ((await checkRole("DOCTOR")) && payment.appointment.doctor_id !== userId) {
+      return { success: false, msg: "Unauthorized" };
+    }
 
-    await prisma.appointment.update({
-      data: {
-        status: "COMPLETED",
-      },
-      where: { id: res.appointment_id },
+    const billTotal = await prisma.patientBills.aggregate({
+      where: { bill_id: payment.id },
+      _sum: { total_cost: true },
     });
+    const totalAmount = billTotal._sum.total_cost ?? 0;
+    const discountAmount = (discountPercentage / 100) * totalAmount;
+
+    await prisma.$transaction([
+      prisma.payment.update({
+        data: {
+          bill_date: parsed.data.bill_date,
+          discount: discountAmount,
+          total_amount: totalAmount,
+        },
+        where: { id: payment.id },
+      }),
+      prisma.appointment.update({
+        data: { status: "COMPLETED" },
+        where: { id: payment.appointment_id },
+      }),
+    ]);
+
     return {
       success: true,
       error: false,
-      msg: `Bill generated successfully`,
+      msg: "Bill generated successfully",
     };
   } catch (error) {
-    console.log(error);
+    console.error("Failed to generate bill", error);
     return { success: false, msg: "Internal Server Error" };
   }
 }

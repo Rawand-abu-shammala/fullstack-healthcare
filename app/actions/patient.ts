@@ -2,13 +2,19 @@
 
 import { prisma } from "@/lib/db";
 import { PatientFormSchema } from "@/lib/schema";
-import { clerkClient } from "@clerk/nextjs/server";
+import { checkRole } from "@/utils/roles";
+import { auth, clerkClient } from "@clerk/nextjs/server";
 
-export async function updatePatient(data: any, pid: string) {
+export async function updatePatient(data: unknown, pid: string) {
   try {
-    const validateData = PatientFormSchema.safeParse(data);
+    const { userId } = await auth();
+    const isAdmin = await checkRole("ADMIN");
+    if (!userId || (userId !== pid && !isAdmin)) {
+      return { success: false, error: true, msg: "Unauthorized" };
+    }
 
-    if (!validateData.success) {
+    const validated = PatientFormSchema.safeParse(data);
+    if (!validated.success) {
       return {
         success: false,
         error: true,
@@ -16,8 +22,7 @@ export async function updatePatient(data: any, pid: string) {
       };
     }
 
-    const patientData = validateData.data;
-
+    const patientData = validated.data;
     const client = await clerkClient();
     await client.users.updateUser(pid, {
       firstName: patientData.first_name,
@@ -25,9 +30,7 @@ export async function updatePatient(data: any, pid: string) {
     });
 
     await prisma.patient.update({
-      data: {
-        ...patientData,
-      },
+      data: patientData,
       where: { id: pid },
     });
 
@@ -36,17 +39,26 @@ export async function updatePatient(data: any, pid: string) {
       error: false,
       msg: "Patient info updated successfully",
     };
-  } catch (error: any) {
-    console.error(error);
-    return { success: false, error: true, msg: error?.message };
+  } catch (error) {
+    console.error("Failed to update patient", error);
+    return { success: false, error: true, msg: "Unable to update patient" };
   }
 }
 
-export async function createNewPatient(data: any, pid: string) {
+export async function createNewPatient(data: unknown, pid: string) {
   try {
-    const validateData = PatientFormSchema.safeParse(data);
+    const { userId } = await auth();
+    const isAdmin = await checkRole("ADMIN");
+    const isPatient = await checkRole("PATIENT");
+    if (
+      !userId ||
+      (pid === "new-patient" ? !isAdmin : pid !== userId ? !isAdmin : !isAdmin && !isPatient)
+    ) {
+      return { success: false, error: true, msg: "Unauthorized" };
+    }
 
-    if (!validateData.success) {
+    const validated = PatientFormSchema.safeParse(data);
+    if (!validated.success) {
       return {
         success: false,
         error: true,
@@ -54,10 +66,9 @@ export async function createNewPatient(data: any, pid: string) {
       };
     }
 
-    const patientData = validateData.data;
-    let patient_id = pid;
-
+    const patientData = validated.data;
     const client = await clerkClient();
+    let patientId = pid;
 
     if (pid === "new-patient") {
       const user = await client.users.createUser({
@@ -67,8 +78,7 @@ export async function createNewPatient(data: any, pid: string) {
         lastName: patientData.last_name,
         publicMetadata: { role: "patient" },
       });
-
-      patient_id = user?.id;
+      patientId = user.id;
     } else {
       await client.users.updateUser(pid, {
         publicMetadata: { role: "patient" },
@@ -78,7 +88,7 @@ export async function createNewPatient(data: any, pid: string) {
     await prisma.patient.create({
       data: {
         ...patientData,
-        id: patient_id,
+        id: patientId,
       },
     });
 
@@ -87,9 +97,8 @@ export async function createNewPatient(data: any, pid: string) {
       error: false,
       msg: "Patient created successfully",
     };
-  } catch (error: any) {
-    console.error(error);
-    return { success: false, error: true, msg: error?.message };
+  } catch (error) {
+    console.error("Failed to create patient", error);
+    return { success: false, error: true, msg: "Unable to create patient" };
   }
 }
-

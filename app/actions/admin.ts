@@ -14,19 +14,11 @@ import { auth, clerkClient } from "@clerk/nextjs/server";
 export async function createNewStaff(data: any) {
   try {
     const { userId } = await auth();
-
-    if (!userId) {
-      return { success: false, msg: "Unauthorized" };
-    }
-
-    const isAdmin = await checkRole("ADMIN");
-
-    if (!isAdmin) {
+    if (!userId || !(await checkRole("ADMIN"))) {
       return { success: false, msg: "Unauthorized" };
     }
 
     const values = StaffSchema.safeParse(data);
-
     if (!values.success) {
       return {
         success: false,
@@ -36,28 +28,20 @@ export async function createNewStaff(data: any) {
     }
 
     const validatedValues = values.data;
-
+    const [firstName, ...lastNameParts] = validatedValues.name.split(/\s+/);
     const client = await clerkClient();
-
     const user = await client.users.createUser({
       emailAddress: [validatedValues.email],
       password: validatedValues.password,
-      firstName: validatedValues.name.split(" ")[0],
-      lastName: validatedValues.name.split(" ")[1],
-      publicMetadata: { role: "doctor" },
+      firstName,
+      lastName: lastNameParts.join(" "),
+      publicMetadata: { role: validatedValues.role.toLowerCase() },
     });
 
-    delete validatedValues["password"];
-
+    delete validatedValues.password;
     await prisma.staff.create({
       data: {
-        name: validatedValues.name,
-        phone: validatedValues.phone,
-        email: validatedValues.email,
-        address: validatedValues.address,
-        role: validatedValues.role,
-        license_number: validatedValues.license_number,
-        department: validatedValues.department,
+        ...validatedValues,
         colorCode: generateRandomColor(),
         id: user.id,
         status: "ACTIVE",
@@ -66,20 +50,24 @@ export async function createNewStaff(data: any) {
 
     return {
       success: true,
-      message: "Doctor added successfully",
+      message: "Staff added successfully",
       error: false,
     };
   } catch (error) {
-    console.log(error);
+    console.error("Failed to create staff member", error);
     return { error: true, success: false, message: "Something went wrong" };
   }
 }
+
 export async function createNewDoctor(data: any) {
   try {
+    const { userId } = await auth();
+    if (!userId || !(await checkRole("ADMIN"))) {
+      return { success: false, msg: "Unauthorized" };
+    }
+
     const values = DoctorSchema.safeParse(data);
-
     const workingDaysValues = WorkingDaysSchema.safeParse(data?.work_schedule);
-
     if (!values.success || !workingDaysValues.success) {
       return {
         success: false,
@@ -89,20 +77,18 @@ export async function createNewDoctor(data: any) {
     }
 
     const validatedValues = values.data;
-    const workingDayData = workingDaysValues.data!;
-
+    const workingDayData = workingDaysValues.data ?? [];
+    const [firstName, ...lastNameParts] = validatedValues.name.split(/\s+/);
     const client = await clerkClient();
-
     const user = await client.users.createUser({
       emailAddress: [validatedValues.email],
       password: validatedValues.password,
-      firstName: validatedValues.name.split(" ")[0],
-      lastName: validatedValues.name.split(" ")[1],
+      firstName,
+      lastName: lastNameParts.join(" "),
       publicMetadata: { role: "doctor" },
     });
 
-    delete validatedValues["password"];
-
+    delete validatedValues.password;
     const doctor = await prisma.doctor.create({
       data: {
         ...validatedValues,
@@ -111,9 +97,9 @@ export async function createNewDoctor(data: any) {
     });
 
     await Promise.all(
-      workingDayData?.map((el) =>
+      workingDayData.map((day) =>
         prisma.workingDays.create({
-          data: { ...el, doctor_id: doctor.id },
+          data: { ...day, doctor_id: doctor.id },
         })
       )
     );
@@ -124,28 +110,39 @@ export async function createNewDoctor(data: any) {
       error: false,
     };
   } catch (error) {
-    console.log(error);
+    console.error("Failed to create doctor", error);
     return { error: true, success: false, message: "Something went wrong" };
   }
 }
 
 export async function addNewService(data: any) {
   try {
-    const isValidData = ServicesSchema.safeParse(data);
+    const { userId } = await auth();
+    if (!userId || !(await checkRole("ADMIN"))) {
+      return { success: false, msg: "Unauthorized" };
+    }
 
-    const validatedData = isValidData.data;
+    const validated = ServicesSchema.safeParse(data);
+    if (!validated.success) {
+      return { success: false, msg: "Invalid service data" };
+    }
+
+    const price = Number(validated.data.price);
+    if (!Number.isFinite(price) || price < 0) {
+      return { success: false, msg: "Invalid service price" };
+    }
 
     await prisma.services.create({
-      data: { ...validatedData!, price: Number(data.price!) },
+      data: { ...validated.data, price },
     });
 
     return {
       success: true,
       error: false,
-      msg: `Service added successfully`,
+      msg: "Service added successfully",
     };
   } catch (error) {
-    console.log(error);
+    console.error("Failed to create service", error);
     return { success: false, msg: "Internal Server Error" };
   }
 }
