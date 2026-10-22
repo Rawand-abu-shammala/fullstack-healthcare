@@ -86,6 +86,8 @@ export const BookAppointment = ({
         form.reset({});
         router.refresh();
         toast.success("Appointment created successfully");
+      } else {
+        toast.error("msg" in res ? res.msg : "Unable to book appointment");
       }
     } catch (error) {
       console.log(error);

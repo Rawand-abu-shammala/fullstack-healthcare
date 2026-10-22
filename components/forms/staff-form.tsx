@@ -56,6 +56,8 @@ export const StaffForm = () => {
         router.refresh();
       } else if (resp.error) {
         toast.error(resp.message);
+      } else {
+        toast.error("Unable to create staff member. Check the submitted information.");
       }
     } catch (error) {
       console.log(error);

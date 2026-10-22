@@ -171,25 +171,24 @@ interface SwitchProps {
 }
 
 export const SwitchInput = ({ data, setWorkSchedule }: SwitchProps) => {
-  const handleChange = (day: string, field: any, value: string) => {
+  const handleDayChange = (day: string, checked: boolean) => {
     setWorkSchedule((prevDays) => {
-      const dayExist = prevDays.find((d) => d.day === day);
-
-      if (dayExist) {
-        return prevDays.map((d) =>
-          d.day === day ? { ...d, [field]: value } : d
-        );
-      } else {
-        if (field === true) {
-          return [
-            ...prevDays,
-            { day, start_time: "09:00", close_time: "17:00" },
-          ];
-        } else {
-          return [...prevDays, { day, [field]: value }];
-        }
-      }
+      if (!checked) return prevDays.filter((workingDay) => workingDay.day !== day);
+      if (prevDays.some((workingDay) => workingDay.day === day)) return prevDays;
+      return [...prevDays, { day, start_time: "09:00", close_time: "17:00" }];
     });
+  };
+
+  const handleTimeChange = (
+    day: string,
+    field: "start_time" | "close_time",
+    value: string
+  ) => {
+    setWorkSchedule((prevDays) =>
+      prevDays.map((workingDay) =>
+        workingDay.day === day ? { ...workingDay, [field]: value } : workingDay
+      )
+    );
   };
 
   return (
@@ -202,7 +201,7 @@ export const SwitchInput = ({ data, setWorkSchedule }: SwitchProps) => {
           <Switch
             id={el.value}
             className="data-[state=checked]:bg-blue-600 peer"
-            onCheckedChange={() => handleChange(el.value, true, "09:00")}
+            onCheckedChange={(checked) => handleDayChange(el.value, checked)}
           />
           <Label htmlFor={el.value} className="w-20 capitalize">
             {el.value}
@@ -218,7 +217,7 @@ export const SwitchInput = ({ data, setWorkSchedule }: SwitchProps) => {
               type="time"
               defaultValue="09:00"
               onChange={(e) =>
-                handleChange(el.value, "start_time", e.target.value)
+                handleTimeChange(el.value, "start_time", e.target.value)
               }
             />
             <Input
@@ -226,7 +225,7 @@ export const SwitchInput = ({ data, setWorkSchedule }: SwitchProps) => {
               type="time"
               defaultValue="17:00"
               onChange={(e) =>
-                handleChange(el.value, "close_time", e.target.value)
+                handleTimeChange(el.value, "close_time", e.target.value)
               }
             />
           </div>

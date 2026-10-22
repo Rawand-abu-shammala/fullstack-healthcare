@@ -85,6 +85,8 @@ export const DoctorForm = () => {
         router.refresh();
       } else if (resp.error) {
         toast.error(resp.message);
+      } else {
+        toast.error("Unable to create doctor. Check the submitted information.");
       }
     } catch (error) {
       console.log(error);

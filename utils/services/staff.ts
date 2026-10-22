@@ -14,21 +14,25 @@ export async function getAllStaff({
     const LIMIT = Number(limit) || 10;
 
     const SKIP = (PAGE_NUMBER - 1) * LIMIT;
+    const searchTerm = search?.trim();
+    const where = searchTerm
+      ? {
+          OR: [
+            { name: { contains: searchTerm, mode: "insensitive" as const } },
+            { phone: { contains: searchTerm, mode: "insensitive" as const } },
+            { email: { contains: searchTerm, mode: "insensitive" as const } },
+          ],
+        }
+      : {};
 
     const [staff, totalRecords] = await Promise.all([
       prisma.staff.findMany({
-        where: {
-          OR: [
-            { name: { contains: search, mode: "insensitive" } },
-            { phone: { contains: search, mode: "insensitive" } },
-            { email: { contains: search, mode: "insensitive" } },
-          ],
-        },
+        where,
 
         skip: SKIP,
         take: LIMIT,
       }),
-      prisma.staff.count(),
+      prisma.staff.count({ where }),
     ]);
 
     const totalPages = Math.ceil(totalRecords / LIMIT);

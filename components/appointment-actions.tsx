@@ -44,7 +44,7 @@ export async function AppointmentActionOptions ({
             variant="ghost"
             className="w-full justify-start"
           >
-            <Link href={`appointments/${appointmentId}`}>
+            <Link href={`/record/appointments/${appointmentId}`}>
               <User size={16} /> View Full Details
             </Link>
           </Button>

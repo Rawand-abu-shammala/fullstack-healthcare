@@ -70,21 +70,23 @@ function NewPatient({data, type}: DataProps) {
     values
   ) => {
     setLoading(true);
+    try {
+      const res =
+        type === "create"
+          ? await createNewPatient(values, userId!)
+          : await updatePatient(values, userId!);
 
-    const res =
-      type === "create"
-        ? await createNewPatient(values, userId!)
-        : await updatePatient(values, userId!);
-
-    setLoading(false);
-
-    if (res?.success) {
-      toast.success(res.msg);
-      form.reset();
-      router.push("/patient");
-    } else {
-      console.log(res);
-      toast.error("Failed to create patient");
+      if (res?.success) {
+        toast.success(res.msg);
+        form.reset();
+        router.push("/patient");
+      } else {
+        toast.error(res?.msg ?? "Unable to save patient information");
+      }
+    } catch {
+      toast.error("Unable to save patient information");
+    } finally {
+      setLoading(false);
     }
   };
 

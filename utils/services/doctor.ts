@@ -25,7 +25,7 @@ export async function getDoctorDashboardStats() {
         prisma.patient.count(),
         prisma.staff.count({ where: { role: "NURSE" } }),
         prisma.appointment.findMany({
-          where: { doctor_id: userId!, appointment_date: { lte: new Date() } },
+          where: { doctor_id: userId! },
           include: {
             patient: {
               select: {
@@ -174,21 +174,25 @@ export async function getAllDoctors({
     const LIMIT = Number(limit) || 10;
 
     const SKIP = (PAGE_NUMBER - 1) * LIMIT;
+    const searchTerm = search?.trim();
+    const where = searchTerm
+      ? {
+          OR: [
+            { name: { contains: searchTerm, mode: "insensitive" as const } },
+            { specialization: { contains: searchTerm, mode: "insensitive" as const } },
+            { email: { contains: searchTerm, mode: "insensitive" as const } },
+          ],
+        }
+      : {};
 
     const [doctors, totalRecords] = await Promise.all([
       prisma.doctor.findMany({
-        where: {
-          OR: [
-            { name: { contains: search, mode: "insensitive" } },
-            { specialization: { contains: search, mode: "insensitive" } },
-            { email: { contains: search, mode: "insensitive" } },
-          ],
-        },
+        where,
         include: { working_days: true },
         skip: SKIP,
         take: LIMIT,
       }),
-      prisma.doctor.count(),
+      prisma.doctor.count({ where }),
     ]);
 
     const totalPages = Math.ceil(totalRecords / LIMIT);
